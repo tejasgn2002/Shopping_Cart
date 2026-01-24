@@ -3,6 +3,9 @@ package com.ecom.app.service;
 import com.ecom.app.entity.Cart;
 import com.ecom.app.entity.CartItem;
 import com.ecom.app.entity.Product;
+import com.ecom.app.exceptions.CartItemNotFoundException;
+import com.ecom.app.exceptions.CartNotFoundException;
+import com.ecom.app.exceptions.ProductNotFoundException;
 import com.ecom.app.repository.CartItemRepository;
 import com.ecom.app.repository.CartRepository;
 import com.ecom.app.repository.ProductRepository;
@@ -35,14 +38,22 @@ public class CartItemServiceImpl implements CartItemService {
         logger.info("Add cart item request received: cartId={}, productId={}, quantity={}",
                 cartId, cartItemRequest.getProductId(), cartItemRequest.getQuantity());
 
-        Cart cart = cartRepo.findById(cartId).orElse(new Cart());
-        Product product = productRepo.findById(cartItemRequest.getProductId()).orElse(new Product());
+        Cart cart = cartRepo.findById(cartId).orElseThrow(()-> {
+            logger.warn("Invalid cart. cartId={}",cartId);
+            return new CartNotFoundException("Cart Not Found");
+        });
+        Product product = productRepo.findById(cartItemRequest.getProductId()).orElseThrow(
+                ()->{
+                    logger.warn("Invalid Product. productId={}",cartItemRequest.getProductId());
+                    return new ProductNotFoundException("Product Not Found");
+                });
 
-        if (cart.getCartId() == null || product.getProductId() == null) {
-            logger.warn("Invalid cart or product. cartId={}, productId={}",
-                    cartId, cartItemRequest.getProductId());
-            return new ResponseEntity<>("Invalid Details", HttpStatus.BAD_REQUEST);
-        }
+//        if (cart.getCartId() == null || product.getProductId() == null) {
+//            logger.warn("Invalid cart or product. cartId={}, productId={}",
+//                    cartId, cartItemRequest.getProductId());
+//
+//            return new ResponseEntity<>("Invalid Details", HttpStatus.BAD_REQUEST);
+//        }
 
         CartItem cartItem = cartItemRepo.findByCartAndProduct(cart, product).orElseGet(() -> {
             logger.debug("CartItem not found for cartId={} and productId={}, creating new CartItem",
@@ -68,15 +79,19 @@ public class CartItemServiceImpl implements CartItemService {
         logger.info("Update quantity request: cartId={}, itemId={}, quantity={}",
                 cartId, itemId, quantity);
 
-        CartItem cartItem = cartItemRepo.findById(itemId).orElse(new CartItem());
-
-        System.out.println(cartItem.getCart().getCartId());
-
-        if (cartItem.getCartItemId() == null || cartItem.getCart().getCartId() != cartId) {
+        CartItem cartItem = cartItemRepo.findByCartIdAndCartItemId(cartId,itemId).orElseThrow(()->{
             logger.warn("Invalid update attempt for itemId={} and cartId={}",
-                    itemId, cartId);
-            return new ResponseEntity<>("Invalid Details", HttpStatus.BAD_REQUEST);
-        }
+                   itemId, cartId);
+            return new CartItemNotFoundException("Cart Item Not Found");
+        });
+
+//        System.out.println(cartItem.getCart().getCartId());
+
+//        if (cartItem.getCart().getCartId() != cartId) {
+//            logger.warn("Invalid update attempt for itemId={} and cartId={}",
+//                    itemId, cartId);
+//            return new ResponseEntity<>("Invalid Details", HttpStatus.BAD_REQUEST);
+//        }
 
         cartItem.setQuantity(quantity);
 
@@ -105,7 +120,7 @@ public class CartItemServiceImpl implements CartItemService {
 
         if (cartItemRepo.findById(itemId).isEmpty()) {
             logger.warn("Cart item deletion failed, item not found: itemId={}", itemId);
-            return new ResponseEntity<>("Item Deletion Failed", HttpStatus.BAD_REQUEST);
+            throw new CartItemNotFoundException("Cart Item Not Found");
         }
 
         cartItemRepo.deleteById(itemId);
