@@ -2,6 +2,7 @@ package com.ecom.app.service;
 
 import com.ecom.app.entity.Category;
 import com.ecom.app.entity.Product;
+import com.ecom.app.exceptions.CategoryNotFoundException;
 import com.ecom.app.repository.CategoryRepository;
 import com.ecom.app.repository.ProductRepository;
 import com.ecom.app.requestbody.ProductRequest;
@@ -38,13 +39,15 @@ public class ProductServiceImpl implements ProductService {
                 productRequest.getStockQty());
 
         Category category = categoryRepo.findById(productRequest.getCategoryId())
-                .orElse(new Category());
+                .orElseThrow(()->{
+                    return new CategoryNotFoundException("Category Not Found");
+                });
 
-        if (category.getCategoryId() == null) {
-            logger.warn("Invalid category while adding product. categoryId={}",
-                    productRequest.getCategoryId());
-            return new ResponseEntity<>("Invalid Category Details", HttpStatus.OK);
-        }
+//        if (category.getCategoryId() == null) {
+//            logger.warn("Invalid category while adding product. categoryId={}",
+//                    productRequest.getCategoryId());
+//            return new ResponseEntity<>("Invalid Category Details", HttpStatus.OK);
+//        }
 
         Product product = new Product();
         product.setProductName(productRequest.getProductName());
@@ -74,7 +77,11 @@ public class ProductServiceImpl implements ProductService {
                     productRequest.getCategoryId());
 
             Category category = categoryRepo.findById(productRequest.getCategoryId())
-                    .orElse(new Category());
+                    .orElseThrow(
+                            ()->{
+                                return new CategoryNotFoundException("Category Not Found");
+                            }
+                    );
 
             if (category.getCategoryId() != null) {
 
@@ -105,13 +112,15 @@ public class ProductServiceImpl implements ProductService {
         logger.info("Fetch products by category request received: categoryId={}",
                 categoryId);
 
-        Category category = categoryRepo.findById(categoryId).orElse(null);
+        Category category = categoryRepo.findById(categoryId).orElseThrow(()->{
+            return new CategoryNotFoundException("Category Not Found");
+        });
 
-        if (category == null) {
-            logger.warn("Invalid category while fetching products. categoryId={}",
-                    categoryId);
-            return new ResponseEntity<>("Invalid Category", HttpStatus.BAD_REQUEST);
-        }
+//        if (category == null) {
+//            logger.warn("Invalid category while fetching products. categoryId={}",
+//                    categoryId);
+//            return new ResponseEntity<>("Invalid Category", HttpStatus.BAD_REQUEST);
+//        }
 
         logger.info("Fetching products for categoryId={}", categoryId);
         List<Product> allByCategory = productRepo.findAllByCategory(category)

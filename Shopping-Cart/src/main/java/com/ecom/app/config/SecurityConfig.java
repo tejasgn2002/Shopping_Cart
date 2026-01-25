@@ -37,13 +37,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(customizer -> customizer.disable())
-			    .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/user/register","/user/login","/").permitAll()
                         .requestMatchers("/admin/register").hasAuthority("ROLE_SUPER-ADMIN")
                         .requestMatchers("/user/list","/api/products",
-                                "/api/product","/api/category","/api/categories").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/user/**","/api/carts/**").hasAnyAuthority("ROLE_ADMIN","ROLE_USER","ROLE_SUPER-ADMIN")
+                                "/api/product","/api/category","/api/categories").hasAnyAuthority("ROLE_ADMIN","ROLE_SUPER-ADMIN")
+                        .requestMatchers("/user/**","/api/categories/list","/api/carts/**").hasAnyAuthority("ROLE_ADMIN","ROLE_USER","ROLE_SUPER-ADMIN")
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(

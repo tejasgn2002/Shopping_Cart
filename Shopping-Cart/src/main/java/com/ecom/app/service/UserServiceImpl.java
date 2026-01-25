@@ -2,9 +2,12 @@ package com.ecom.app.service;
 
 import com.ecom.app.entity.Role;
 import com.ecom.app.entity.User;
+import com.ecom.app.exceptions.UserNotFoundException;
+import com.ecom.app.exceptions.UsernameAlreadyExistsException;
 import com.ecom.app.repository.RoleRepository;
 import com.ecom.app.repository.UserRepository;
 import com.ecom.app.requestbody.UserRequest;
+import com.ecom.app.util.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,10 +59,10 @@ public class UserServiceImpl implements UserService {
                 userRequest.getUsername(),
                 userRequest.getRole());
 
-        if (userRepo.findByUsername(userRequest.getUsername()) != null) {
+        if (userRepo.findByUsername(userRequest.getUsername()).isPresent()) {
             logger.warn("Username already exists: username={}",
                     userRequest.getUsername());
-            return new ResponseEntity<>("Username Already Exist", HttpStatus.BAD_REQUEST);
+            throw new UsernameAlreadyExistsException( "Username Already Exist");
         }
 
         User user = new User();
@@ -84,11 +87,13 @@ public class UserServiceImpl implements UserService {
 
         logger.info("Update user request received: username={}", username);
 
-        User user = userRepo.findByUsername(username);
+        User user = userRepo.findByUsername(username).orElseThrow(()->{
+            return new UserNotFoundException("User Not Found");
+        });
 
-        user.setName(userRequest.getName());
-        user.setAge(userRequest.getAge());
-        user.setPhone(userRequest.getPhone());
+        user.setName(userRequest.getName() == null?user.getName():userRequest.getName());
+        user.setAge(userRequest.getAge() == 0?user.getAge():userRequest.getAge());
+        user.setPhone(userRequest.getPhone() == 0?user.getPhone():userRequest.getPhone());
 
         logger.info("Updating user details for username={}", username);
 
@@ -99,18 +104,21 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<?> fetchUserByUserName(String username) {
 
         logger.info("Fetch user by username request received: username={}", username);
-
-        return new ResponseEntity<>(userRepo.findByUsername(username), HttpStatus.OK);
+        User user = userRepo.findByUsername(username).orElseThrow(()->{
+            return new UserNotFoundException("User Not Found");
+        });
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<?> loginUser(String username, String password) {
+        logger.info("Login user by username request received: username={}", username);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username,password)
         );
 
         if(authentication.isAuthenticated()){
-            System.out.println("Success");
+            logger.info("User Login Successfully for username={}", username);
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String accessToken = jwtService.generateToken(userDetails);
             Map<String, String> tokens = new TreeMap<>();

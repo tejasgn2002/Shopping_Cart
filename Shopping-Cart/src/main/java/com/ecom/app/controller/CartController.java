@@ -8,17 +8,23 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/carts")
+@CrossOrigin("http://localhost:4200")
 public class CartController {
     @Autowired
     private CartService service;
 
     @PostMapping
-    public ResponseEntity<?> addToCart(@RequestBody int userId){
-        return service.addCart(userId);
+    public ResponseEntity<?> addToCart(@RequestBody String username){
+        return service.addCart(username);
     }
 
-    @GetMapping("/{cartId}")
+    @GetMapping("/total/{cartId}")
     public ResponseEntity<?> fetchTotalOfCartItems(@PathVariable int cartId){
         return service.fetchTotalOfCartItems(cartId);
+    }
+
+    @GetMapping("/{username}")
+    public ResponseEntity<?> fetchCartIdByUsername(@PathVariable String username){
+        return service.fetchCartIdByUsername(username);
     }
 }

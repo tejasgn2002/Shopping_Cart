@@ -2,6 +2,7 @@ package com.ecom.app.service;
 
 import com.ecom.app.entity.Category;
 import com.ecom.app.entity.Product;
+import com.ecom.app.exceptions.CategoryNotFoundException;
 import com.ecom.app.repository.CategoryRepository;
 import com.ecom.app.requestbody.CategoryRequest;
 import com.ecom.app.requestbody.ProductRequest;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -62,7 +64,11 @@ public class CategoryServiceImpl implements CategoryService {
 
         logger.info("Fetch category by id request received: categoryId={}", categoryId);
 
-        return null;
+        return new ResponseEntity<>(categoryRepo.findById(categoryId).orElseThrow(
+                ()->{
+                    return new CategoryNotFoundException("Category Not Found");
+                }
+        ),HttpStatus.OK);
     }
 
     @Override
@@ -78,8 +84,11 @@ public class CategoryServiceImpl implements CategoryService {
     public ResponseEntity<?> fetchAllCategory() {
 
         logger.info("Fetch all categories request received");
-
-        return new ResponseEntity<>(categoryRepo.findAll(), HttpStatus.OK);
+        List<String> categories = categoryRepo.findAll()
+                                                .stream()
+                                                .map(Category::getCategoryName)
+                                                .toList();
+        return new ResponseEntity<>(categories, HttpStatus.OK);
     }
 
     @Override

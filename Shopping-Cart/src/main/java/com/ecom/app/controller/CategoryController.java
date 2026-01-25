@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin("http://localhost:4200")
 public class CategoryController {
     @Autowired
     private CategoryService service;
@@ -25,7 +26,12 @@ public class CategoryController {
         return service.addCategories(categoryRequestList);
     }
 
-    @GetMapping("/categories") public ResponseEntity<?> fetchAllCategories(){
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<?> fetchCategoryById(@PathVariable int categoryId){
+        return service.fetchCategoryById(categoryId);
+    }
+
+    @GetMapping("/categories/list") public ResponseEntity<?> fetchAllCategories(){
         return service.fetchAllCategory();
     }
 }

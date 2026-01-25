@@ -16,6 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
+    @JsonIgnore
     private Integer id;
 
     private String name;
@@ -35,6 +36,7 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @JsonIgnore
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;

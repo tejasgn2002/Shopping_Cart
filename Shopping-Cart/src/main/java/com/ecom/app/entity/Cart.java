@@ -1,5 +1,6 @@
 package com.ecom.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,12 +20,14 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cart_id")
     private Integer cartId;
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @OneToMany(mappedBy = "cart")
     @JsonManagedReference
     private List<CartItem> cartItemList;
+    @JsonIgnore
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;

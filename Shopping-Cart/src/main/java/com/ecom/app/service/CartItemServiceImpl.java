@@ -78,8 +78,10 @@ public class CartItemServiceImpl implements CartItemService {
 
         logger.info("Update quantity request: cartId={}, itemId={}, quantity={}",
                 cartId, itemId, quantity);
-
-        CartItem cartItem = cartItemRepo.findByCartIdAndCartItemId(cartId,itemId).orElseThrow(()->{
+        Cart cart = cartRepo.findById(cartId).orElseThrow(()->{
+            return  new CartNotFoundException("Cart Not Found");
+        });
+        CartItem cartItem = cartItemRepo.findByCartAndCartItemId(cart,itemId).orElseThrow(()->{
             logger.warn("Invalid update attempt for itemId={} and cartId={}",
                    itemId, cartId);
             return new CartItemNotFoundException("Cart Item Not Found");

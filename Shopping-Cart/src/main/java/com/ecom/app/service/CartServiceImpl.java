@@ -29,12 +29,12 @@ public class CartServiceImpl implements CartService {
     private UserRepository userRepo;
 
     @Override
-    public ResponseEntity<?> addCart(int userID) {
-        logger.info("Request received to create cart for userId={}", userID);
+    public ResponseEntity<?> addCart(String username) {
+        logger.info("Request received to create cart for username={}", username);
 
-        User user = userRepo.findById(userID).orElseThrow(
+        User user = userRepo.findByUsername(username).orElseThrow(
                 ()->{
-                    logger.warn("User not found with userId={}", userID);
+                    logger.warn("User not found with username={}", username);
                     return new UserNotFoundException("User Not Found");
                 }
         );
@@ -45,7 +45,7 @@ public class CartServiceImpl implements CartService {
 
         Cart existingCart = cartRepo.findByUser(user);
         if (existingCart != null) {
-            logger.info("Cart already exists for userId={}", userID);
+            logger.info("Cart already exists for username={}", username);
             throw new CartAlreadyExistsException("Cart already exists");
         }
 
@@ -54,7 +54,7 @@ public class CartServiceImpl implements CartService {
 
         Cart savedCart = cartRepo.save(cart);
         logger.info("Cart created successfully with cartId={} for userId={}",
-                savedCart.getCartId(), userID);
+                savedCart.getCartId(), username);
 
         return new ResponseEntity<>(savedCart, HttpStatus.OK);
     }
@@ -64,6 +64,7 @@ public class CartServiceImpl implements CartService {
         logger.info("Fetching total price for cartId={}", cartId);
 
         Cart cart = cartRepo.findById(cartId).orElseThrow(()->{
+            logger.warn("Invalid cart. cartId={}",cartId);
             return new CartNotFoundException("Cart Not Found");
         });
 //        if (cart == null) {
@@ -93,14 +94,31 @@ public class CartServiceImpl implements CartService {
         logger.info("Fetching cart details for cartId={}", cartId);
         Cart cart = cartRepo.findById(cartId).orElseThrow(
                 ()->{
+                    logger.warn("Invalid cart. cartId={}",cartId);
                     return  new CartNotFoundException("Cart Not Found");
                 }
         );
         return new ResponseEntity<>(cart, HttpStatus.OK);
     }
 
+    @Override
+    public ResponseEntity<?> fetchCartIdByUsername(String username) {
+        User user = userRepo.findByUsername(username).orElseThrow(
+                ()->{
+                    logger.warn("User not found with username={}", username);
+                    return new UserNotFoundException("User Not Found");
+                }
+        );
+        Cart existingCart = cartRepo.findByUser(user);
+        if (existingCart == null) {
+            logger.info("Cart Not Found for username={}", username);
+            throw new CartNotFoundException("Cart Not Found");
+        }
 
-@Override
+        return new ResponseEntity<>(existingCart,HttpStatus.OK);
+    }
+
+    @Override
     public ResponseEntity<?> fetchAllCarts() {
         return null;
     }

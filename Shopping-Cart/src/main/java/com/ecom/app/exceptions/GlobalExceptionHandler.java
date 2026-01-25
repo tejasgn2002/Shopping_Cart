@@ -33,4 +33,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ResponseBodyMessage.response(ex), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<?> handleCategoryNotFound(CategoryNotFoundException ex) {
+        return new ResponseEntity<>(ResponseBodyMessage.response(ex), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<?> handleUsernameAlreadyExists(UsernameAlreadyExistsException ex) {
+        return new ResponseEntity<>(ResponseBodyMessage.response(ex), HttpStatus.CONFLICT);
+    }
+
 }
