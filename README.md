@@ -1,7 +1,7 @@
 # Shopping_Cart
 <br>
 <h2> Introduction: </h2>
-<p>Shopping Cart Application is build using the Spring boot,RESTFul API, Data JPA, JWT, Spring Security and MYSQL Database</p>
+<p>Shopping Cart Application is built using the Spring boot,RESTFul API, Data JPA, JWT, Spring Security and MYSQL Database</p>
 <h4>Instructions:</h4>
 <ol>
   <li>Create the Database in your MYSQL or any DB</li>
